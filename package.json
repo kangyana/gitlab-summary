@@ -1,0 +1,31 @@
+{
+  "name": "gitlab-summary",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "start": "tauri dev",
+    "upgrade": "upgrade @tauri-apps/cli @tauri-apps/api --latest",
+    "build2": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^1.0.0-rc.6",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.0.0-rc.13",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@umijs/fabric": "^2.10.0",
+    "@vitejs/plugin-react": "^1.3.0",
+    "eslint": "^8.16.0",
+    "prettier": "^2.6.2",
+    "stylelint": "^14.8.5",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.9"
+  }
+}
