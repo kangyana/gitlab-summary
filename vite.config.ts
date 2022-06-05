@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import antdDayjs from 'antd-dayjs-vite-plugin';
+import visualizer from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), antdDayjs()],
+  plugins: [
+    react(),
+    antdDayjs(),
+    visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
+  ],
   css: {
     preprocessorOptions: {
       less: {
@@ -14,8 +23,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@/':'/src/',
-    }
+      '@/': '/src/',
+    },
   },
   server: {
     port: 3300,
