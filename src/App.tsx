@@ -1,54 +1,35 @@
-import { useEffect, useState } from 'react';
-import { invoke } from '@tauri-apps/api/tauri';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect } from 'react';
+import { Tabs } from 'antd';
+import { useAtom } from 'jotai';
+import { activeKeyAtom } from '@/jotai';
+import LoginPage from '@/components/Login';
+import ProjectList from '@/components/Projects';
+// import { invoke } from '@tauri-apps/api/tauri';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [activeKey, setActiveKey] = useAtom(activeKeyAtom);
+
 
   useEffect(() => {
-    invoke<string>('oauth_token', { username: 'test', password: '123456' })
-      .then((res) => {
-        console.log('oauth_token', res);
-      })
-      .catch((e) => {
-        console.error(e);
-      });
+    // invoke<string>('oauth_token', { username: 'test', password: '123456' })
+    //   .then((res) => {
+    //     console.log('oauth_token', res);
+    //   })
+    //   .catch((e) => {
+    //     console.error(e);
+    //   });
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
+    <div className="app">
+      <Tabs className="app-tabs" type="card" tabPosition="left" activeKey={activeKey} onChange={setActiveKey}>
+        <Tabs.TabPane tab="登录" key="login">
+          <LoginPage />
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="项目列表" key="projects">
+          <ProjectList />
+        </Tabs.TabPane>
+      </Tabs>
     </div>
   );
 }

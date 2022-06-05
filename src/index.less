@@ -1,0 +1,23 @@
+body {
+  user-select:none;
+}
+#root,
+.app {
+  height: 100%;
+}
+.app {
+  background: #f5f5f5;
+}
+.app-tabs {
+  height: 100%;
+  .ant-tabs-nav {
+    display: none;
+  }
+  .ant-tabs-content {
+    height: 100%;
+    overflow: overlay;
+    .ant-tabs-tabpane {
+      padding: 0 !important;
+    }
+  }
+}
