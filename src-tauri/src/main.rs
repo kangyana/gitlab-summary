@@ -37,6 +37,7 @@ fn main() {
             db_read,
             db_read_all,
             oauth_token,
+            user,
             projects,
             project_commits,
         ])
@@ -63,6 +64,19 @@ async fn oauth_token(
             );
             Ok(r)
         }
+        Err(e) => {
+            println!("error: {:#?}", e);
+            Err(e.to_string())
+        }
+    }
+}
+
+#[tauri::command]
+async fn user(database: tauri::State<'_, Database>) -> Result<HashMap<String, Value>, String> {
+    let res = get_user(database.clone()).await;
+
+    match res {
+        Ok(r) => Ok(r),
         Err(e) => {
             println!("error: {:#?}", e);
             Err(e.to_string())
@@ -121,6 +135,22 @@ async fn get_oauth_token(
         .await?
         .json::<TokenResponse>()
         .await?;
+    Ok(res)
+}
+
+async fn get_user(
+    database: tauri::State<'_, Database>,
+) -> Result<HashMap<String, Value>, reqwest::Error> {
+    let access_token = db_read("access_token".into(), database.clone()).unwrap();
+    let request_url = format!(
+        "https://gitlab.ydjdev.com/api/v4/user?access_token={}",
+        access_token,
+    );
+    let res = reqwest::get(request_url)
+        .await?
+        .json::<HashMap<String, Value>>()
+        .await?;
+    println!("res: {:#?}", res);
     Ok(res)
 }
 

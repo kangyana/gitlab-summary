@@ -2,8 +2,10 @@ import { useState } from 'react';
 import type { FC } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { invoke } from '@tauri-apps/api/tauri';
 import { useAtom } from 'jotai';
 import { activeKeyAtom, userinfoAtom } from '@/jotai';
+import { User } from '@/types/user';
 import './index.less';
 
 interface Formdata {
@@ -18,14 +20,35 @@ const LoginPage: FC = () => {
   const [form] = Form.useForm<Formdata>();
 
   const handleFinish = (values: Formdata) => {
+    const { username, password } = values;
     setLoading(true);
-    console.log(values);
-    setTimeout(() => {
-      setLoading(false);
-      message.success('登录成功！');
-      setUserinfo({ username: '测试小酱油' });
-      setActiveKey('projects');
-    }, 1000)
+    invoke('oauth_token', { username, password })
+      .then(() => {
+        message.success('登录成功！');
+        getUserinfo();
+      })
+      .finally(() => {
+        setLoading(false);
+      })
+      .catch((e) => {
+        message.error('登录失败！');
+        console.error(e);
+      });
+  };
+
+  const getUserinfo = () => {
+    setLoading(true);
+    invoke<User>('user')
+      .then((res) => {
+        setUserinfo(res);
+        setActiveKey('projects');
+      })
+      .finally(() => {
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   };
 
   return (
