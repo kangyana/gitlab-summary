@@ -15,7 +15,7 @@ struct Database(Arc<Mutex<HashMap<String, String>>>);
 
 #[derive(Serialize)]
 struct TokenBody<'a> {
-    grant_type: &'a str,
+    grant_type: String,
     username: &'a str,
     password: &'a str,
 }
@@ -33,9 +33,6 @@ fn main() {
     tauri::Builder::default()
         .manage(Database(Default::default()))
         .invoke_handler(tauri::generate_handler![
-            db_insert,
-            db_read,
-            db_read_all,
             oauth_token,
             user,
             projects,
@@ -51,16 +48,15 @@ async fn oauth_token(
     password: String,
     database: tauri::State<'_, Database>,
 ) -> Result<TokenResponse, String> {
-    let res = get_oauth_token(username.clone(), password.clone()).await;
-    db_insert("username".into(), username.clone(), database.clone());
+    let res = get_oauth_token(&username, &password).await;
+    db_insert(String::from("username"), &username, &database);
 
     match res {
         Ok(r) => {
-            let access_token = r.access_token.clone();
             db_insert(
-                "access_token".into(),
-                access_token.clone(),
-                database.clone(),
+                String::from("access_token"),
+                &r.access_token,
+                &database,
             );
             Ok(r)
         }
@@ -73,7 +69,7 @@ async fn oauth_token(
 
 #[tauri::command]
 async fn user(database: tauri::State<'_, Database>) -> Result<HashMap<String, Value>, String> {
-    let res = get_user(database.clone()).await;
+    let res = get_user(database).await;
 
     match res {
         Ok(r) => Ok(r),
@@ -88,7 +84,7 @@ async fn user(database: tauri::State<'_, Database>) -> Result<HashMap<String, Va
 async fn projects(
     database: tauri::State<'_, Database>,
 ) -> Result<Vec<HashMap<String, Value>>, String> {
-    let res = get_projects(database.clone()).await;
+    let res = get_projects(database).await;
 
     match res {
         Ok(r) => Ok(r),
@@ -104,7 +100,7 @@ async fn project_commits(
     project_id: u16,
     database: tauri::State<'_, Database>,
 ) -> Result<Vec<HashMap<String, Value>>, String> {
-    let res = get_project_commits(project_id, database.clone()).await;
+    let res = get_project_commits(project_id, database).await;
 
     match res {
         Ok(r) => {
@@ -119,14 +115,14 @@ async fn project_commits(
 }
 
 async fn get_oauth_token(
-    username: String,
-    password: String,
+    username: &String,
+    password: &String,
 ) -> Result<TokenResponse, reqwest::Error> {
     let client = reqwest::Client::new();
     let body = TokenBody {
-        grant_type: "password",
-        username: &username,
-        password: &password,
+        grant_type: String::from("password"),
+        username,
+        password,
     };
     let res = client
         .post("https://gitlab.ydjdev.com/oauth/token")
@@ -141,7 +137,7 @@ async fn get_oauth_token(
 async fn get_user(
     database: tauri::State<'_, Database>,
 ) -> Result<HashMap<String, Value>, reqwest::Error> {
-    let access_token = db_read("access_token".into(), database.clone()).unwrap();
+    let access_token = db_read(String::from("access_token"), &database).unwrap();
     let request_url = format!(
         "https://gitlab.ydjdev.com/api/v4/user?access_token={}",
         access_token,
@@ -157,7 +153,7 @@ async fn get_user(
 async fn get_projects(
     database: tauri::State<'_, Database>,
 ) -> Result<Vec<HashMap<String, Value>>, reqwest::Error> {
-    let access_token = db_read("access_token".into(), database.clone()).unwrap();
+    let access_token = db_read(String::from("access_token"), &database).unwrap();
     let request_url = format!(
         "https://gitlab.ydjdev.com/api/v4/projects?access_token={}",
         access_token,
@@ -174,7 +170,7 @@ async fn get_project_commits(
     project_id: u16,
     database: tauri::State<'_, Database>,
 ) -> Result<Vec<HashMap<String, Value>>, reqwest::Error> {
-    let access_token = db_read("access_token".into(), database.clone()).unwrap();
+    let access_token = db_read(String::from("access_token"), &database).unwrap();
     let request_url = format!(
         "https://gitlab.ydjdev.com/api/v4/projects/{}/repository/commits?access_token={}",
         project_id, access_token,
@@ -188,17 +184,14 @@ async fn get_project_commits(
     Ok(res)
 }
 
-#[tauri::command]
-fn db_insert(key: String, value: String, db: tauri::State<'_, Database>) {
-    db.0.lock().unwrap().insert(key, value);
+fn db_insert(key: String, value: &String, db: &tauri::State<'_, Database>) {
+    db.0.lock().unwrap().insert(key, value.clone());
 }
 
-#[tauri::command]
-fn db_read(key: String, db: tauri::State<'_, Database>) -> Option<String> {
+fn db_read(key: String, db: &tauri::State<'_, Database>) -> Option<String> {
     db.0.lock().unwrap().get(&key).cloned()
 }
-
-#[tauri::command]
-fn db_read_all(db: tauri::State<'_, Database>) -> HashMap<String, String> {
-    db.0.lock().unwrap().clone()
-}
+// #[tauri::command]
+// fn db_read_all(db: tauri::State<'_, Database>) -> HashMap<String, String> {
+//     db.0.lock().unwrap().clone()
+// }
