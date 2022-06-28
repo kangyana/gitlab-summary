@@ -1,3 +1,4 @@
+use crate::constant::API_BATH_PATH;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
@@ -26,8 +27,9 @@ pub async fn get_oauth_token(
         username,
         password,
     };
+    let request_url = format!("{}/oauth/token", API_BATH_PATH);
     let res = client
-        .post("https://gitlab.ydjdev.com/oauth/token")
+        .post(request_url)
         .json(&body)
         .send()
         .await?
