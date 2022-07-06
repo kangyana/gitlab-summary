@@ -8,7 +8,7 @@ pub struct TokenBody<'a> {
     password: &'a str,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TokenResponse {
     pub access_token: String,
     token_type: String,
@@ -35,5 +35,7 @@ pub async fn get_oauth_token(
         .await?
         .json::<TokenResponse>()
         .await?;
+
+    println!("res: {:#?}", res);
     Ok(res)
 }

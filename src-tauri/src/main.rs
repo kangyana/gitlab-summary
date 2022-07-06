@@ -8,7 +8,7 @@ use app::{
     services::{
         oauth_token::{get_oauth_token, TokenResponse},
         projects::{get_project_commits, get_projects},
-        user::get_user,
+        user::{get_user, UserResponse},
     },
 };
 use serde_json::value::Value;
@@ -49,7 +49,7 @@ async fn oauth_token(
 }
 
 #[tauri::command]
-async fn user(database: tauri::State<'_, Database>) -> Result<HashMap<String, Value>, String> {
+async fn user(database: tauri::State<'_, Database>) -> Result<UserResponse, String> {
     let access_token = db_read(String::from("access_token"), &database);
     let res = get_user(access_token).await;
 
